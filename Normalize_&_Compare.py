@@ -28,13 +28,13 @@ folder_data_sunspot = 'C:/Users/joans/Desktop/Natuur- en Sterrenkunde/Year 2/Per
 
 def Normalization(N_order, main_folder):
     
-    
-    wavelength_list_complete = [[], [], [], [6677.2817, 6538.1120, 6583.9059], [], [6307.6570, 6296.8722, 6327.2778], [], [], [], [], [], [], [5187.7462, 5162.2845, 5176.961], [], [], [], [], [], [], [], [], [], [], []]
+    wavelength_list_complete = [[], [], [], [6677.2817, 6538.1120, 6583.9059], [6416.307,6384.717,6411.8991], [6307.6570, 6296.8722, 6327.2778], [6114.9234,6098.8031,6052.7239], [], [], [], [], [], [5187.7462, 5162.2845, 5176.961], [], [], [], [], [], [], [], [], [], [], []]
 
-    x_list_complete = [[], [], [], [1752, 4656, 3747], [], [1720, 1980, 1245], [], [], [], [], [], [], [4230, 4859, 4485], [], [], [], [], [], [], [], [], [], [], []]
+    x_list_complete = [[], [], [], [1752, 4656, 3747], [3318,3981,3410], [1720, 1980, 1245], [2269,2650,3697], [], [], [], [], [], [4230, 4859, 4485], [], [], [], [], [], [], [], [], [], [], []]
 
     uncertainty_x_complete = [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]
 
+            
     
     data_order_N = np.loadtxt(os.path.join(main_folder, "data_raw_order_{}.csv").format(N_order),  delimiter=',')
 
@@ -220,7 +220,7 @@ def Normalization(N_order, main_folder):
     
     return wavelength_object, normalized_flux
 
-order = 12
+order = 6
 wavelength_object_sun, normalized_flux_o_sun = Normalization(order, folder_data_sun)
 wavelength_object_sunspot, normalized_flux_sunspot = Normalization(order, folder_data_sunspot)
 
@@ -229,9 +229,11 @@ plt.plot(wavelength_object_sun, normalized_flux_o_sun, label='Sun', alpha=0.8, c
 plt.plot(wavelength_object_sunspot, normalized_flux_sunspot, label='Sunspot', alpha=0.8, color="blue")
 
 plt.axhline(y=1, color='black', linestyle='--')
-plt.xlim(5150+17, 5175+6)
+#plt.xlim(5150+17, 5175+6)
 plt.xlabel("Wavelength [Angstrom]")
 plt.ylabel("Normalized Flux")
 plt.title(f"Normalized flux Order {order}")
 plt.legend()
+plt.grid(True)
 plt.savefig(f"Normalized_line_compare_order_{order}.jpg", dpi=500)
+plt.show()
