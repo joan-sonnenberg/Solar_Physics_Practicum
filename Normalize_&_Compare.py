@@ -25,13 +25,21 @@ from tqdm import tqdm
 folder_data_sun = 'C:/Users/joans/Desktop/Natuur- en Sterrenkunde/Year 2/Period 2/N&S Practicum 2/Practicum/Solar_Physics_Practicum/Solar_Physics_Practicum/Flux_raw_sun_centre'
 folder_data_sunspot = 'C:/Users/joans/Desktop/Natuur- en Sterrenkunde/Year 2/Period 2/N&S Practicum 2/Practicum/Solar_Physics_Practicum/Solar_Physics_Practicum/Flux_raw_sunspot3477'
 
+with open('ThArCal.csv', 'r') as MyData:
+    lambda_cal, pixel_cal = [], []
+    i = 0
+    for line in MyData:
+        i += 1
+        if i > 1:                      
+            data_cut = line.split(',')
+            lambda_cal.append([float(data_cut[2]), float(data_cut[3]), float(data_cut[4])])
+            pixel_cal.append([float(data_cut[5]), float(data_cut[6]), float(data_cut[7])])
+
 
 def Normalization(N_order, main_folder):
     
-    wavelength_list_complete = [[], [], [], [6677.2817, 6538.1120, 6583.9059], [6416.307,6384.717,6411.8991], [6307.6570, 6296.8722, 6327.2778], [6114.9234,6098.8031,6052.7239], [], [], [], [], [], [5187.7462, 5162.2845, 5176.961], [], [], [], [], [], [], [], [], [], [], []]
-
-    x_list_complete = [[], [], [], [1752, 4656, 3747], [3318,3981,3410], [1720, 1980, 1245], [2269,2650,3697], [], [], [], [], [], [4230, 4859, 4485], [], [], [], [], [], [], [], [], [], [], []]
-
+    wavelength_list_complete = lambda_cal
+    x_list_complete = pixel_cal
     uncertainty_x_complete = [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]
 
             
@@ -58,16 +66,18 @@ def Normalization(N_order, main_folder):
     plt.plot(x_pixelvalues,darkflat, label = 'darkflat')
     plt.legend()
     #plt.show()
+    plt.close()
     
     wavelength_list = wavelength_list_complete[N_order]
     x_list = x_list_complete[N_order]
     uncertainty_x = uncertainty_x_complete[N_order]
     plt.plot(x_pixelvalues, thar)
-    plt.scatter(x_list, thar[x_list], c='red', label = 'calibration points' )
+    """plt.scatter(x_list, thar[x_list], c='red', label = 'calibration points' )
     for index in range(len(x_list)):
-        plt.text(x_list[index]+20, thar[x_list][index]+20, wavelength_list[index], size=8)
+        plt.text(x_list[index]+20, thar[x_list][index]+20, wavelength_list[index], size=8)"""
     plt.legend()
     #plt.show()
+    plt.close()
     
     fit_order = 2
     fit_1 = np.polynomial.polynomial.polyfit(x_list,wavelength_list,fit_order,w=uncertainty_x)
@@ -120,12 +130,14 @@ def Normalization(N_order, main_folder):
         ax2.text(x_list[index], residuals[index], wavelength_list[index], size=8)
     plt.legend()
     #plt.show()
+    plt.close(fig)
     
     plt.subplots(1, 1, figsize=(16.5, 11.7), dpi=300)
     plt.plot(wavelength_object,(flux_object-dark)/(tungstenflat-darkflat))
     plt.ylim(0,)
     plt.xlim(6560, 6565)
     #plt.show()
+    plt.close()
     
     fit_degree = 20
     fit_coeffs = np.polyfit(wavelength_object, (flux_object - dark) / (tungstenflat - darkflat), fit_degree)
@@ -143,7 +155,7 @@ def Normalization(N_order, main_folder):
     plt.legend()
     plt.title("Flux Normalization using Polynomial Fit")
     #plt.show()
-
+    plt.close()
     #############################################################
 
     plt.figure(dpi=300)
@@ -154,7 +166,7 @@ def Normalization(N_order, main_folder):
     plt.legend()
     plt.title("Flux Normalization using Polynomial Fit")
     #plt.show()
-
+    plt.close()
     fit_degree = 20
 
 
@@ -206,7 +218,7 @@ def Normalization(N_order, main_folder):
     plt.title("Flux Normalization using Polynomial Fit through Selected Peaks")
     #plt.savefig("dots.jpg", dpi=500)
     #plt.show()
-
+    plt.close()
 
 
     plt.figure(dpi=300)
@@ -217,10 +229,10 @@ def Normalization(N_order, main_folder):
     plt.legend()
     #plt.savefig("normalize.jpg", dpi=500)
     #plt.show()
-    
+    plt.close()
     return wavelength_object, normalized_flux
 
-order = 6
+order = 15
 wavelength_object_sun, normalized_flux_o_sun = Normalization(order, folder_data_sun)
 wavelength_object_sunspot, normalized_flux_sunspot = Normalization(order, folder_data_sunspot)
 
@@ -230,10 +242,181 @@ plt.plot(wavelength_object_sunspot, normalized_flux_sunspot, label='Sunspot', al
 
 plt.axhline(y=1, color='black', linestyle='--')
 #plt.xlim(5150+17, 5175+6)
+#plt.xlim(5188, 5178)
 plt.xlabel("Wavelength [Angstrom]")
 plt.ylabel("Normalized Flux")
 plt.title(f"Normalized flux Order {order}")
 plt.legend()
 plt.grid(True)
 plt.savefig(f"Normalized_line_compare_order_{order}.jpg", dpi=500)
+plt.close()
+
+
+def absorption_line(x, y, order):
+    start = [0,0,0,6560,0,0,0,5888,0,0,0,0,5178,5168,0,4860]
+    end = [0,0,0,6566,0,0,0,5892,0,0,0,0,5188,5169.2,0,4863]
+    
+    x_data = []
+    y_data = []
+    indexes = []
+    
+    for i in range(len(x)):
+        if x[i] > start[order] and x[i] < end[order]:
+            x_data.append(x[i])
+            y_data.append(y[i])
+            indexes.append(i)
+            
+    """start_index = indexes[0]
+    end_index = indexes[-1]"""           
+            
+    return x_data, y_data #, start_index, end_index
+    
+    
+"""line_x, line_y_sun, start_index, end_index = absorption_line(wavelength_object_sun, normalized_flux_o_sun, order)  
+line_x, line_y_sunspot, start_index, end_index = absorption_line(wavelength_object_sunspot, normalized_flux_sunspot * 5/3, order)""" 
+
+line_x, line_y_sun = absorption_line(wavelength_object_sun, normalized_flux_o_sun, order)  
+line_x, line_y_sunspot = absorption_line(wavelength_object_sunspot, normalized_flux_sunspot, order)  
+
+plt.figure(dpi=300)
+plt.plot(line_x, line_y_sun, label='Sun', alpha=0.8, color="red", linestyle='--')
+plt.plot(line_x, line_y_sunspot, label='Sunspot', alpha=0.8, color="blue")
+
+plt.axhline(y=1, color='black', linestyle='--')
+#plt.xlim(5150+17, 5175+6)
+#plt.xlim(5188, 5178)
+plt.xlabel("Wavelength [Angstrom]")
+plt.ylabel("Normalized Flux")
+plt.title(f"Normalized flux Order {order}")
+plt.legend()
+plt.grid(True)
+plt.savefig(f"Trim_{order}.jpg", dpi=500)  
+
+
+
+"""print(f"start: {start_index}")
+print(f"end: {end_index}")  
+"""
+def gaussian(x, amp, cen, wid, dy):
+    return amp * np.exp(-(x-cen)**2 / wid) + dy
+
+
+wavelength = line_x
+flux = line_y_sun
+
+#5183 order 12
+#6562.7 order 3
+#5895.92 order 7
+#4861.34 order 15
+
+line_name = [0,0,0,"Fraunhofer line C: H_α",0,0,0,0,0,0,0,0,"Fraunhofer line E_2: Fe",0,0,"Fraunhofer line F: H_β"]
+line_center = [0,0,0,6562.7,0,0,0,5889.95,0,0,0,5270.39,5183,0,0,4861.34]
+
+init_vals = [-0.5, line_center[order], 0.5, 1]  # for [amp, cen, wid]
+best_vals, covar = curve_fit(gaussian, wavelength, flux, p0=init_vals)
+best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=init_vals)
+
+plt.figure()
+plt.scatter(wavelength, flux, color="red", label="sun")
+plt.scatter(wavelength, line_y_sunspot, color="blue", label="sunspot")
+plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]), color="orange", label="fit sun")
+plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
+
+
+plt.xlabel("Wavelength [Angstrom]")
+plt.ylabel("Normalized Flux")
+plt.title(f"{line_name[order]}. Order_{order}")
+plt.grid(True)
+plt.legend()
+plt.savefig("gaussian_1.jpg", dpi=700)
+
+
+
+line_x, line_y_sun = absorption_line(wavelength_object_sun, normalized_flux_o_sun, order)  
+line_x, line_y_sunspot = absorption_line(wavelength_object_sunspot, normalized_flux_sunspot * 10, order)
+
+
+
+
+
+
+W_o= 2*best_vals[2]*np.log(2)
+
+W = W_o * (10 **(-10))
+perr = np.sqrt(np.diag(covar))
+
+
+#print(best_vals)
+
+
+######################################################################################################################################################
+distance = 0
+counter = 0
+x_solutions = []
+y_value_list=[]
+for y_value in np.arange(0.35, 0.5, 0.01):
+
+    amplitude = best_vals[0]
+    centrum = best_vals[1]
+    wide = best_vals[2]
+    dy_value = best_vals[3]
+
+    amplitude_s = best_vals_spot[0]
+    centrum_s = best_vals_spot[1]
+    wide_s = best_vals_spot[2]
+    dy_value_s = best_vals_spot[3]
+
+    x_value_1_sun = centrum + np.sqrt(-wide * np.log((y_value* max(flux) - dy_value) / amplitude))
+    x_value_2_sun = centrum - np.sqrt(-wide * np.log((y_value* max(flux) - dy_value) / amplitude))
+
+    x_value_1_sunspot = centrum_s + np.sqrt(-wide_s * np.log((y_value - dy_value_s) / amplitude_s))
+    x_value_2_sunspot = centrum_s - np.sqrt(-wide_s * np.log((y_value - dy_value_s) / amplitude_s))
+
+    dx_1 = abs(x_value_1_sun - x_value_1_sunspot)
+    dx_2 = abs(x_value_2_sun - x_value_2_sunspot)
+
+    average_dx = (dx_1 + dx_2) / 2
+    distance = distance + average_dx
+    counter = counter + 1
+    x_solutions.append(x_value_1_sun)
+    x_solutions.append(x_value_2_sun)
+    x_solutions.append(x_value_1_sunspot)
+    x_solutions.append(x_value_2_sunspot)
+    y_value_list.append(y_value)
+    y_value_list.append(y_value)
+    y_value_list.append(y_value)
+    y_value_list.append(y_value)
+    
+result_dx = 0.83 * np.sqrt(W_o * (distance / counter))
+
+m_e = 9.10938 * (10**(-31))
+c = 299792458
+e = 1.60217663 * (10**(-19))
+lambda_rest = line_center[order]
+g = 1
+
+
+
+magnetic_field = (((result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * ((lambda_rest * (10**(-10)))**2))) * 10000
+print(f"B = {round(magnetic_field,2)} G")
+
+
+#print(x_solutions)
+
+
+
+plt.figure()
+plt.scatter(wavelength, flux / max(flux), color="red", label="sun")
+plt.scatter(wavelength, line_y_sunspot / max(line_y_sunspot), color="blue", label="sunspot")
+plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]) / max(flux), color="orange", label="fit sun")
+plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
+plt.scatter(x_solutions, y_value_list, color="black", label="solutions loop")
+
+
+
+plt.xlabel("Wavelength [Angstrom]")
+plt.ylabel("Normalized Flux")
+plt.title(f"{line_name[order]}. Scaled. Order_{order}")
+plt.grid(True)
+plt.legend()
 plt.show()
