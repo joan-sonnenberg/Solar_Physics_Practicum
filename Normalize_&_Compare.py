@@ -232,7 +232,7 @@ def Normalization(N_order, main_folder):
     plt.close()
     return wavelength_object, normalized_flux
 
-order = 15
+order = 7
 wavelength_object_sun, normalized_flux_o_sun = Normalization(order, folder_data_sun)
 wavelength_object_sunspot, normalized_flux_sunspot = Normalization(order, folder_data_sunspot)
 
@@ -249,12 +249,13 @@ plt.title(f"Normalized flux Order {order}")
 plt.legend()
 plt.grid(True)
 plt.savefig(f"Normalized_line_compare_order_{order}.jpg", dpi=500)
-plt.close()
+plt.show()
+
 
 
 def absorption_line(x, y, order):
-    start = [0,0,0,6560,0,0,0,5888,0,0,0,0,5178,5168,0,4860]
-    end = [0,0,0,6566,0,0,0,5892,0,0,0,0,5188,5169.2,0,4863]
+    start = [0,0,0,6560,0,6257,0,5888,0,0,0,5268,5178,5168,0,4860,4837]
+    end = [0,0,0,6566,0,6259,0,5892,0,0,0,5270.35,5188,5169.2,0,4863,4840.2]
     
     x_data = []
     y_data = []
@@ -291,7 +292,7 @@ plt.title(f"Normalized flux Order {order}")
 plt.legend()
 plt.grid(True)
 plt.savefig(f"Trim_{order}.jpg", dpi=500)  
-
+plt.close()
 
 
 """print(f"start: {start_index}")
@@ -309,41 +310,45 @@ flux = line_y_sun
 #5895.92 order 7
 #4861.34 order 15
 
-line_name = [0,0,0,"Fraunhofer line C: H_α",0,0,0,0,0,0,0,0,"Fraunhofer line E_2: Fe",0,0,"Fraunhofer line F: H_β"]
-line_center = [0,0,0,6562.7,0,0,0,5889.95,0,0,0,5270.39,5183,0,0,4861.34]
+line_name = [0,0,0,"Fraunhofer line C: H_α",0,"VI",0,"Fraunhofer line D_2: Na I (5889.95 Å)",0,0,0,0,"Fraunhofer line E_2: Fe",0,0,"Fraunhofer line F: H_β", "Mn I"]
+line_center = [0,0,0,6562.7,0,6258,0,5889.95,0,0,0,5270.39,5183,0,0,4861.34,4838.56]
 
 init_vals = [-0.5, line_center[order], 0.5, 1]  # for [amp, cen, wid]
 best_vals, covar = curve_fit(gaussian, wavelength, flux, p0=init_vals)
 best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=init_vals)
 
-plt.figure()
-plt.scatter(wavelength, flux, color="red", label="sun")
-plt.scatter(wavelength, line_y_sunspot, color="blue", label="sunspot")
-plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]), color="orange", label="fit sun")
-plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
+plt.figure(figsize=(10, 6))
+plt.plot(wavelength, flux, color="red", label="sun", linewidth=4)
+plt.plot(wavelength, line_y_sunspot, color="blue", label="sunspot", linewidth=4)
+#plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]), color="orange", label="fit sun")
+#plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
 
-
-plt.xlabel("Wavelength [Angstrom]")
-plt.ylabel("Normalized Flux")
-plt.title(f"{line_name[order]}. Order_{order}")
+label_size_font = 15
+plt.xlabel("Wavelength (Å)", fontsize=label_size_font)
+plt.ylabel("Normalized Flux", fontsize=label_size_font)
+plt.title(f"{line_name[order]}. Og Data. Order_{order}.", fontsize=20)
 plt.grid(True)
 plt.legend()
-plt.savefig("gaussian_1.jpg", dpi=700)
-
-
-
-line_x, line_y_sun = absorption_line(wavelength_object_sun, normalized_flux_o_sun, order)  
-line_x, line_y_sunspot = absorption_line(wavelength_object_sunspot, normalized_flux_sunspot * 10, order)
-
-
-
-
-
+plt.savefig(f"gaussian_order_{order}.jpg", dpi=1000)
 
 W_o= 2*best_vals[2]*np.log(2)
 
 W = W_o * (10 **(-10))
 perr = np.sqrt(np.diag(covar))
+
+
+line_x, line_y_sun = absorption_line(wavelength_object_sun, normalized_flux_o_sun, order)  
+line_x, line_y_sunspot = absorption_line(wavelength_object_sunspot, normalized_flux_sunspot * 1.45, order) #1.45
+
+
+# TESTING
+best_vals, covar = curve_fit(gaussian, wavelength, flux, p0=init_vals)
+best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=init_vals)
+#best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=[-0.5,6257.87,0.5,1])
+
+
+
+
 
 
 #print(best_vals)
@@ -353,8 +358,9 @@ perr = np.sqrt(np.diag(covar))
 distance = 0
 counter = 0
 x_solutions = []
+solution_values = []
 y_value_list=[]
-for y_value in np.arange(0.35, 0.5, 0.01):
+for y_value in np.arange(0.35, 0.6, 0.01):
 
     amplitude = best_vals[0]
     centrum = best_vals[1]
@@ -374,10 +380,13 @@ for y_value in np.arange(0.35, 0.5, 0.01):
 
     dx_1 = abs(x_value_1_sun - x_value_1_sunspot)
     dx_2 = abs(x_value_2_sun - x_value_2_sunspot)
+    
+    solution_values.append(dx_1)
+    solution_values.append(dx_2)
 
     average_dx = (dx_1 + dx_2) / 2
-    distance = distance + average_dx
-    counter = counter + 1
+    distance = distance + dx_1 + dx_2
+    counter = counter + 2
     x_solutions.append(x_value_1_sun)
     x_solutions.append(x_value_2_sun)
     x_solutions.append(x_value_1_sunspot)
@@ -386,37 +395,92 @@ for y_value in np.arange(0.35, 0.5, 0.01):
     y_value_list.append(y_value)
     y_value_list.append(y_value)
     y_value_list.append(y_value)
+ 
+   
+
     
-result_dx = 0.83 * np.sqrt(W_o * (distance / counter))
+    
+sunspot_hand_11 = [5269.7519, 5269.7044, 5270.2553, 5270.3387, 5269.6670]
+sun_hand_11 = [5269.8310, 5269.7893, 5270.0956, 5270.1374, 5269.7663]
+
+sunspot_hand_7 = [5890.302, 5890.175, 5889.508, 5889.424, 5889.628, 5890.398]
+sun_hand_7 = [5890.175, 5890.073, 5889.603, 5889.520, 5889.702, 5890.302]
+
+sunspot_hand_16 = [4838.305, 4838.342]
+sun_hand_16 = [4838.343, 4838.395]
+
+sun_hand = sun_hand_11
+sunspot_hand = sunspot_hand_11
+
+longitude = 0
+for m in range(len(sun_hand)):
+    longitude = longitude + abs(sun_hand[m] - sunspot_hand[m])
+avg_long = longitude / len(sunspot_hand)
+    
+method = 1
+    
+if method == 1:
+    shift = distance / counter
+    result_dx = 0.83 * np.sqrt(W_o * shift)
+else:
+    shift = avg_long
+    result_dx = 0.83 * np.sqrt(W_o * avg_long)
+    solutions = []
+    for j in range(len(sun_hand)):
+        solutions.append(abs(sun_hand[j] - sunspot_hand[j]))
+        
+    solution_values = solutions
+    
+sumation = 0
+for value in solution_values:
+    add = (value - shift)**2
+    sumation = sumation + add
+sdv = np.sqrt(sumation / (len(solution_values) - 1))
+error_shift = sdv / np.sqrt(len(solution_values))
+error_W = perr[2]
+
+derivative_1 = 0.83 * 0.5 * ((W_o * shift)**(-0.5)) * shift
+derivative_2 = 0.83 * 0.5 * ((W_o * shift)**(-0.5)) * W_o
+error_result_dx = np.sqrt((derivative_1 * error_W)**2 + (derivative_2 * error_shift)**2)
+
+##################################################################
 
 m_e = 9.10938 * (10**(-31))
 c = 299792458
 e = 1.60217663 * (10**(-19))
 lambda_rest = line_center[order]
-g = 1
+
+g_lande = [1,1,1,1,1,3.3333,1,2.265,1,1,1,1.835,1,1,1,1,2.6667]
+g = g_lande[order]
 
 
 
 magnetic_field = (((result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * ((lambda_rest * (10**(-10)))**2))) * 10000
-print(f"B = {round(magnetic_field,2)} G")
+magnetic_field_error = (((error_result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * ((lambda_rest * (10**(-10)))**2))) * 10000
+
+print(f"B = {round(magnetic_field,1)} +/- {round(magnetic_field_error,1)} G")
 
 
-#print(x_solutions)
+print(f"Shift avg: {shift} +/- {error_shift} A")
+print(f"Delta lambda: {result_dx} +/- {error_result_dx} A")
+#print(avg_long)
+#print(perr)
+#print(W_o)
 
 
-
-plt.figure()
+plt.figure(figsize=(10,6))
 plt.scatter(wavelength, flux / max(flux), color="red", label="sun")
 plt.scatter(wavelength, line_y_sunspot / max(line_y_sunspot), color="blue", label="sunspot")
 plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]) / max(flux), color="orange", label="fit sun")
 plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
-plt.scatter(x_solutions, y_value_list, color="black", label="solutions loop")
+plt.scatter(x_solutions, y_value_list, color="black", label="shift calc. points", s=12, zorder=3)
 
 
 
-plt.xlabel("Wavelength [Angstrom]")
-plt.ylabel("Normalized Flux")
-plt.title(f"{line_name[order]}. Scaled. Order_{order}")
+plt.xlabel("Wavelength (Å)", fontsize=label_size_font)
+plt.ylabel("Normalized Flux", fontsize=label_size_font)
+plt.title(f"{line_name[order]}. Scaled. Order_{order}", fontsize=20)
 plt.grid(True)
 plt.legend()
+plt.savefig(f"Final_plot_order_{order}", dpi=1000)
 plt.show()
