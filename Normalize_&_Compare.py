@@ -232,7 +232,7 @@ def Normalization(N_order, main_folder):
     plt.close()
     return wavelength_object, normalized_flux
 
-order = 15
+order = 11
 wavelength_object_sun, normalized_flux_o_sun = Normalization(order, folder_data_sun)
 wavelength_object_sunspot, normalized_flux_sunspot = Normalization(order, folder_data_sunspot)
 
@@ -415,8 +415,8 @@ sun_hand_16 = [4838.343, 4838.395]
 sunspot_hand_15 = [4838.305, 4838.342]
 sun_hand_15 = [4838.343, 4838.395]
 
-sun_hand = sun_hand_15
-sunspot_hand = sunspot_hand_15
+sun_hand = sun_hand_11
+sunspot_hand = sunspot_hand_11
 
 longitude = 0
 for m in range(len(sun_hand)):
@@ -456,8 +456,12 @@ c = 299792458
 e = 1.60217663 * (10**(-19))
 lambda_rest = 5328.051 #line_center[order]
 
-g_lande = [1,1,1,1,1,3.3333,1,1.835,1,1,1,0.5835,1,1,1,2.25,2.6667]
-g = g_lande[order]
+g_lande_1 = [1,1,1,1,1,3.3333,1,2,1,1,1,1.4,1,1,1,2.25,2.6667]
+g_lande_2 = [1,1,1,1,1,3.3333,1,1.333,1,1,1,1.5,1,1,1,2.25,2.6667]
+j_1 = [0,0,0,0,0,0,0,0.5,0,0,0,5]
+j_2 = [0,0,0,0,0,0,0,1.5,0,0,0,4]
+big_g = ((g_lande_1[order] + g_lande_2[order])/2) + ((g_lande_1[order] - g_lande_2[order])/4)*(j_1[order]*(j_1[order] + 1) - j_2[order]*(j_2[order] + 1))
+g = big_g
 
 #1.425 for 5328.051
 
@@ -465,7 +469,7 @@ magnetic_field = (((result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * (
 magnetic_field_error = (((error_result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * ((lambda_rest * (10**(-10)))**2))) * 10000
 
 print(f"B = {round(magnetic_field,1)} +/- {round(magnetic_field_error,1)} G")
-
+print(f"G: {g}")
 
 print(f"Shift avg: {shift} +/- {error_shift} A")
 print(f"Delta lambda: {result_dx} +/- {error_result_dx} A")
