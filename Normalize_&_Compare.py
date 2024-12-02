@@ -232,7 +232,7 @@ def Normalization(N_order, main_folder):
     plt.close()
     return wavelength_object, normalized_flux
 
-order = 7
+order = 15
 wavelength_object_sun, normalized_flux_o_sun = Normalization(order, folder_data_sun)
 wavelength_object_sunspot, normalized_flux_sunspot = Normalization(order, folder_data_sunspot)
 
@@ -254,8 +254,8 @@ plt.show()
 
 
 def absorption_line(x, y, order):
-    start = [0,0,0,6560,0,6257,0,5888,0,0,0,5268,5178,5168,0,4860,4837]
-    end = [0,0,0,6566,0,6259,0,5892,0,0,0,5270.35,5188,5169.2,0,4863,4840.2]
+    start = [0,0,0,6560,0,6257,0,5888,0,0,0,5268,5178,5168,0,4877,4837]
+    end = [0,0,0,6566,0,6259,0,5892,0,0,0,5270.35,5188,5169.2,0,4879,4840.2]
     
     x_data = []
     y_data = []
@@ -311,7 +311,7 @@ flux = line_y_sun
 #4861.34 order 15
 
 line_name = [0,0,0,"Fraunhofer line C: H_α",0,"VI",0,"Fraunhofer line D_2: Na I (5889.95 Å)",0,0,0,0,"Fraunhofer line E_2: Fe",0,0,"Fraunhofer line F: H_β", "Mn I"]
-line_center = [0,0,0,6562.7,0,6258,0,5889.95,0,0,0,5270.39,5183,0,0,4861.34,4838.56]
+line_center = [0,0,0,6562.7,0,6258,0,5889.95,0,0,0,5270.0,5183,0,0,4878.216,4838.56]
 
 init_vals = [-0.5, line_center[order], 0.5, 1]  # for [amp, cen, wid]
 best_vals, covar = curve_fit(gaussian, wavelength, flux, p0=init_vals)
@@ -400,8 +400,11 @@ for y_value in np.arange(0.35, 0.6, 0.01):
 
     
     
-sunspot_hand_11 = [5269.7519, 5269.7044, 5270.2553, 5270.3387, 5269.6670]
-sun_hand_11 = [5269.8310, 5269.7893, 5270.0956, 5270.1374, 5269.7663]
+sunspot_hand_11 = [5270.333, 5269.703]
+sun_hand_11 = [5270.143, 5269.798]
+
+sunspot_hand_11_2 = [5328.741, 5328.652, 5327.628, 5327.790]
+sun_hand_11_2 = [5328.538, 5328.457, 5327.774, 5327.904]
 
 sunspot_hand_7 = [5890.302, 5890.175, 5889.508, 5889.424, 5889.628, 5890.398]
 sun_hand_7 = [5890.175, 5890.073, 5889.603, 5889.520, 5889.702, 5890.302]
@@ -409,15 +412,18 @@ sun_hand_7 = [5890.175, 5890.073, 5889.603, 5889.520, 5889.702, 5890.302]
 sunspot_hand_16 = [4838.305, 4838.342]
 sun_hand_16 = [4838.343, 4838.395]
 
-sun_hand = sun_hand_11
-sunspot_hand = sunspot_hand_11
+sunspot_hand_15 = [4838.305, 4838.342]
+sun_hand_15 = [4838.343, 4838.395]
+
+sun_hand = sun_hand_15
+sunspot_hand = sunspot_hand_15
 
 longitude = 0
 for m in range(len(sun_hand)):
     longitude = longitude + abs(sun_hand[m] - sunspot_hand[m])
 avg_long = longitude / len(sunspot_hand)
     
-method = 1
+method = 2
     
 if method == 1:
     shift = distance / counter
@@ -448,12 +454,12 @@ error_result_dx = np.sqrt((derivative_1 * error_W)**2 + (derivative_2 * error_sh
 m_e = 9.10938 * (10**(-31))
 c = 299792458
 e = 1.60217663 * (10**(-19))
-lambda_rest = line_center[order]
+lambda_rest = 5328.051 #line_center[order]
 
-g_lande = [1,1,1,1,1,3.3333,1,2.265,1,1,1,1.835,1,1,1,1,2.6667]
+g_lande = [1,1,1,1,1,3.3333,1,1.835,1,1,1,0.5835,1,1,1,2.25,2.6667]
 g = g_lande[order]
 
-
+#1.425 for 5328.051
 
 magnetic_field = (((result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * ((lambda_rest * (10**(-10)))**2))) * 10000
 magnetic_field_error = (((error_result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * ((lambda_rest * (10**(-10)))**2))) * 10000
@@ -472,7 +478,7 @@ plt.figure(figsize=(10,6))
 plt.scatter(wavelength, flux / max(flux), color="red", label="sun")
 plt.scatter(wavelength, line_y_sunspot / max(line_y_sunspot), color="blue", label="sunspot")
 plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]) / max(flux), color="orange", label="fit sun")
-plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
+#plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
 plt.scatter(x_solutions, y_value_list, color="black", label="shift calc. points", s=12, zorder=3)
 
 
