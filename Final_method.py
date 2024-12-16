@@ -233,7 +233,16 @@ def Normalization(N_order, main_folder):
     plt.close()
     return wavelength_object, normalized_flux
 
-order = 14
+order = 12
+line_center = 4920.837
+start = 5166
+end = 5168
+sun_hand = []
+sunspot_hand = []
+lambda_rest = 4920.837
+G_value = 1.2
+
+
 wavelength_object_sun, normalized_flux_o_sun = Normalization(order, folder_data_sun)
 wavelength_object_sunspot, normalized_flux_sunspot = Normalization(order, folder_data_sunspot)
 
@@ -255,15 +264,14 @@ plt.show()
 
 
 def absorption_line(x, y, order):
-    start = [0,0,0,6560,0,6257,0,5888,0,0,0,5268,5181.8,5168,4919.3,4920.25,4701.5]
-    end = [0,0,0,6566,0,6259,0,5892,0,0,0,5270.35,5184.8,5169.2,4921.3,4922,4703.5]
+    
     
     x_data = []
     y_data = []
     indexes = []
     
     for i in range(len(x)):
-        if x[i] > start[order] and x[i] < end[order]:
+        if x[i] > start and x[i] < end:
             x_data.append(x[i])
             y_data.append(y[i])
             indexes.append(i)
@@ -312,7 +320,7 @@ flux = line_y_sun
 #4861.34 order 15
 
 line_name = [0,0,0,"Fraunhofer line C: H_α",0,"VI",0,"Fraunhofer line D_2: Na I (5889.95 Å)",0,0,0,0,"Fraunhofer line E_2: Fe",0,0,"Fraunhofer line F: H_β", "Mn I"]
-line_center = 4920.302
+
 
 init_vals = [-0.5, line_center, 0.5, 1]  # for [amp, cen, wid]
 best_vals, covar = curve_fit(gaussian, wavelength, flux, p0=init_vals)
@@ -350,7 +358,7 @@ scaled_blue_flux = optimal_scale * blue_flux
 
 plt.figure(figsize=(10, 6))
 plt.plot(wavelength, red_flux, color="red", label="sun", linewidth=4)
-plt.plot(wavelength, scaled_blue_flux -0.15, color="blue", label="sunspot", linewidth=4)
+plt.plot(wavelength, scaled_blue_flux -0.08, color="blue", label="sunspot", linewidth=4)
 plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]), color="orange", label="fit sun")
 #plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
 
@@ -392,66 +400,23 @@ counter = 0
 x_solutions = []
 solution_values = []
 y_value_list=[]
-for y_value in np.arange(0.35, 0.6, 0.01):
 
-    amplitude = best_vals[0]
-    centrum = best_vals[1]
-    wide = best_vals[2]
-    dy_value = best_vals[3]
-
-    amplitude_s = best_vals_spot[0]
-    centrum_s = best_vals_spot[1]
-    wide_s = best_vals_spot[2]
-    dy_value_s = best_vals_spot[3]
-
-    x_value_1_sun = centrum + np.sqrt(-wide * np.log((y_value* max(flux) - dy_value) / amplitude))
-    x_value_2_sun = centrum - np.sqrt(-wide * np.log((y_value* max(flux) - dy_value) / amplitude))
-
-    x_value_1_sunspot = centrum_s + np.sqrt(-wide_s * np.log((y_value - dy_value_s) / amplitude_s))
-    x_value_2_sunspot = centrum_s - np.sqrt(-wide_s * np.log((y_value - dy_value_s) / amplitude_s))
-
-    dx_1 = abs(x_value_1_sun - x_value_1_sunspot)
-    dx_2 = abs(x_value_2_sun - x_value_2_sunspot)
-    
-    solution_values.append(dx_1)
-    solution_values.append(dx_2)
-
-    average_dx = (dx_1 + dx_2) / 2
-    distance = distance + dx_1 + dx_2
-    counter = counter + 2
-    x_solutions.append(x_value_1_sun)
-    x_solutions.append(x_value_2_sun)
-    x_solutions.append(x_value_1_sunspot)
-    x_solutions.append(x_value_2_sunspot)
-    y_value_list.append(y_value)
-    y_value_list.append(y_value)
-    y_value_list.append(y_value)
-    y_value_list.append(y_value)
- 
    
 
-
-sun_hand = [4920.486, 4920.127, 4920.391, 4920.244]
-sunspot_hand = [4920.727, 4920.035, 4920.591, 4920.113]
-
+    
 longitude = 0
 for m in range(len(sun_hand)):
     longitude = longitude + abs(sun_hand[m] - sunspot_hand[m])
 avg_long = longitude / len(sunspot_hand)
     
-method = 2
+
+shift = avg_long
+result_dx = 0.83 * np.sqrt(W_o * avg_long)
+solutions = []
+for j in range(len(sun_hand)):
+    solutions.append(abs(sun_hand[j] - sunspot_hand[j]))
     
-if method == 1:
-    shift = distance / counter
-    result_dx = 0.83 * np.sqrt(W_o * shift)
-else:
-    shift = avg_long
-    result_dx = 0.83 * np.sqrt(W_o * avg_long)
-    solutions = []
-    for j in range(len(sun_hand)):
-        solutions.append(abs(sun_hand[j] - sunspot_hand[j]))
-        
-    solution_values = solutions
+solution_values = solutions
     
 sumation = 0
 for value in solution_values:
@@ -470,25 +435,16 @@ error_result_dx = np.sqrt((derivative_1 * error_W)**2 + (derivative_2 * error_sh
 m_e = 9.10938 * (10**(-31))
 c = 299792458
 e = 1.60217663 * (10**(-19))
-lambda_rest = 4920.5028 #line_center[order]
 
-g_lande_1 = 1.5 #[1,1,1,1,1,3.3333,1,2,1,1,1,1.4,1,1,1,1.5,2.6667]
-g_lande_2 = 1.65 #[1,1,1,1,1,3.3333,1,1.333,1,1,1,1.5,1,1,1,1.65,2.6667]
-j_1 = 5 #[0,0,0,0,0,0,0,0.5,0,0,0,5,0,0,0,5]
-j_2 = 4 #[0,0,0,0,0,0,0,1.5,0,0,0,4,0,0,0,4]
-#big_g = ((g_lande_1[order] + g_lande_2[order])/2) + ((g_lande_1[order] - g_lande_2[order])/4)*(j_1[order]*(j_1[order] + 1) - j_2[order]*(j_2[order] + 1))
-big_g = ((g_lande_1 + g_lande_2)/2) + ((g_lande_1 - g_lande_2)/4)*(j_1*(j_1 + 1) - j_2*(j_2 + 1))
-
-g = big_g
 
 #1.425 for 5328.051
 
-magnetic_field = (((result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * ((lambda_rest * (10**(-10)))**2))) * 10000
-magnetic_field_error = (((error_result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * g * ((lambda_rest * (10**(-10)))**2))) * 10000
+magnetic_field = (((result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * G_value * ((lambda_rest * (10**(-10)))**2))) * 10000
+magnetic_field_error = (((error_result_dx * (10**(-10))) * 4 * np.pi * m_e * c) / (e * G_value * ((lambda_rest * (10**(-10)))**2))) * 10000
 
 print(f"Lambda rest: {lambda_rest}")
 print(f"B = {round(magnetic_field,1)} +/- {round(magnetic_field_error,1)} G")
-print(f"G: {g}")
+print(f"G: {G_value}")
 
 print(f"Shift avg: {shift} +/- {error_shift} A")
 print(f"Delta lambda: {result_dx} +/- {error_result_dx} A")

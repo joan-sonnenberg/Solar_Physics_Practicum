@@ -67,6 +67,7 @@ def Normalization(N_order, main_folder):
     plt.plot(x_pixelvalues,darkflat, label = 'darkflat')
     plt.legend()
     #plt.show()
+    plt.savefig("Thorium.jpg", dpi=300)
     plt.close()
     
     wavelength_list = wavelength_list_complete[N_order]
@@ -78,6 +79,7 @@ def Normalization(N_order, main_folder):
         plt.text(x_list[index]+20, thar[x_list][index]+20, wavelength_list[index], size=8)"""
     plt.legend()
     #plt.show()
+    plt.savefig("Pixel_values.jpg", dpi=300)
     plt.close()
     
     fit_order = 2
@@ -131,6 +133,7 @@ def Normalization(N_order, main_folder):
         ax2.text(x_list[index], residuals[index], wavelength_list[index], size=8)
     plt.legend()
     #plt.show()
+    plt.savefig("subplots.jpg", dpi=300)
     plt.close(fig)
     
     plt.subplots(1, 1, figsize=(16.5, 11.7), dpi=300)
@@ -138,6 +141,7 @@ def Normalization(N_order, main_folder):
     plt.ylim(0,)
     plt.xlim(6560, 6565)
     #plt.show()
+    plt.savefig("short.jpg", dpi=300)
     plt.close()
     
     fit_degree = 20
@@ -156,6 +160,7 @@ def Normalization(N_order, main_folder):
     plt.legend()
     plt.title("Flux Normalization using Polynomial Fit")
     #plt.show()
+    plt.savefig("Fit1.jpg", dpi=300)
     plt.close()
     #############################################################
 
@@ -167,6 +172,7 @@ def Normalization(N_order, main_folder):
     plt.legend()
     plt.title("Flux Normalization using Polynomial Fit")
     #plt.show()
+    plt.savefig("o_flux.jpg", dpi=300)
     plt.close()
     fit_degree = 20
 
@@ -219,6 +225,7 @@ def Normalization(N_order, main_folder):
     plt.title("Flux Normalization using Polynomial Fit through Selected Peaks")
     #plt.savefig("dots.jpg", dpi=500)
     #plt.show()
+    plt.savefig("Polynomials.jpg", dpi=300)
     plt.close()
 
 
@@ -230,10 +237,28 @@ def Normalization(N_order, main_folder):
     plt.legend()
     #plt.savefig("normalize.jpg", dpi=500)
     #plt.show()
+    plt.savefig("Polynomials_normalization.jpg", dpi=300)
     plt.close()
     return wavelength_object, normalized_flux
 
-order = 14
+order = 4
+start_wav = 5895.5
+end_wav = 5896.5
+line_center_measured = 5895.890
+gaussian_amplitude = 0.25
+loop_start = 0.4
+loop_end = 0.45
+lambda_rest = 5895.924 #line_center[order]
+
+g_lande_1 = 1.5
+g_lande_2 = 1.75
+j_1 = 5
+j_2 = 3
+big_g = ((g_lande_1 + g_lande_2)/2) + ((g_lande_1 - g_lande_2)/4)*(j_1*(j_1 + 1) - j_2*(j_2 + 1))
+
+g = 1.33 #big_g
+print(g)
+
 wavelength_object_sun, normalized_flux_o_sun = Normalization(order, folder_data_sun)
 wavelength_object_sunspot, normalized_flux_sunspot = Normalization(order, folder_data_sunspot)
 
@@ -250,13 +275,13 @@ plt.title(f"Normalized flux Order {order}")
 plt.legend()
 plt.grid(True)
 plt.savefig(f"Normalized_line_compare_order_{order}.jpg", dpi=500)
-plt.show()
+plt.close()
 
 
 
 def absorption_line(x, y, order):
-    start = [0,0,0,6560,0,6257,0,5888,0,0,0,5268,5181.8,5168,4919.3,4920.25,4701.5]
-    end = [0,0,0,6566,0,6259,0,5892,0,0,0,5270.35,5184.8,5169.2,4921.3,4922,4703.5]
+    start = [start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav,start_wav]
+    end = [end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav,end_wav]
     
     x_data = []
     y_data = []
@@ -311,105 +336,83 @@ flux = line_y_sun
 #5895.92 order 7
 #4861.34 order 15
 
-line_name = [0,0,0,"Fraunhofer line C: H_α",0,"VI",0,"Fraunhofer line D_2: Na I (5889.95 Å)",0,0,0,0,"Fraunhofer line E_2: Fe",0,0,"Fraunhofer line F: H_β", "Mn I"]
-line_center = 4920.302
+line_name = [0,0,0,"Fraunhofer line C: H_α",0,"VI",0,"Fraunhofer line D_2: Na I (5889.95 Å)",0,0,0,0,"Fraunhofer line E_2: Fe",0,0,"Fraunhofer line F: H_β", "Mn I",0,0,0,0,0]
+line_center = line_center_measured
 
 init_vals = [-0.5, line_center, 0.5, 1]  # for [amp, cen, wid]
 best_vals, covar = curve_fit(gaussian, wavelength, flux, p0=init_vals)
 best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=init_vals)
 
-
+def scaled_gaussian(x, amp, cen, wid, scale):
+    return scale * gaussian(x, amp, cen, wid)
 
 wavelength_array = np.array(wavelength)
 red_flux = np.array(flux)  # Y-values for the red spectrum
 blue_flux = np.array(line_y_sunspot)  # Y-values for the blue spectrum
 
-# Define the absorption line region
-absorption_center = line_center  # Approximate wavelength of the absorption line center
-left_region = (wavelength_array < absorption_center - 0.5)  # Wavelengths on the left side
-right_region = (wavelength_array > absorption_center + 0.5)  # Wavelengths on the right side
-
 def parallelism_metric(scale):
-    # Scale the blue flux
+    # Fit the blue flux with the current scaling factor
     scaled_blue_flux = scale * blue_flux
+    best_vals_blue, _ = curve_fit(gaussian, wavelength, scaled_blue_flux, p0=init_vals)
     
-    # Calculate differences between red and scaled blue flux
-    left_diff = np.abs(red_flux[left_region] - scaled_blue_flux[left_region])
-    right_diff = np.abs(red_flux[right_region] - scaled_blue_flux[right_region])
+    # Compute Gaussian fits for both datasets
+    red_fit = gaussian(wavelength, *best_vals)
+    blue_fit = gaussian(wavelength, *best_vals_blue)
     
-    # Metric: Sum of squared differences on left and right sides
+    # Define the absorption line region
+    left_region = (wavelength_array < line_center - gaussian_amplitude)
+    right_region = (wavelength_array > line_center + gaussian_amplitude)
+    
+    # Compute differences in the left and right regions
+    left_diff = np.abs(red_fit[left_region] - blue_fit[left_region])
+    right_diff = np.abs(red_fit[right_region] - blue_fit[right_region])
+    
+    # Return the sum of squared differences
     return np.sum(left_diff**2) + np.sum(right_diff**2)
 
+# Minimize the metric to find the optimal scaling factor
 result = minimize(parallelism_metric, x0=1.0, bounds=[(0.1, 10)])
 optimal_scale = result.x[0]
 
+# Apply the optimal scaling factor
 scaled_blue_flux = optimal_scale * blue_flux
 
+# Fit the scaled blue flux
+best_vals_blue, _ = curve_fit(gaussian, wavelength, scaled_blue_flux, p0=init_vals)
+
+# Generate Gaussian fits for plotting
+red_fit = gaussian(wavelength, *best_vals)
+blue_fit = gaussian(wavelength, *best_vals_blue)
 
 
 
-plt.figure(figsize=(10, 6))
-plt.plot(wavelength, red_flux, color="red", label="sun", linewidth=4)
-plt.plot(wavelength, scaled_blue_flux -0.15, color="blue", label="sunspot", linewidth=4)
-plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]), color="orange", label="fit sun")
-#plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
+up_or_down = scaled_blue_flux[-1] - line_y_sunspot[-1]
+blue_fit = blue_fit - up_or_down
 
-label_size_font = 15
-plt.xlabel("Wavelength (Å)", fontsize=label_size_font)
-plt.ylabel("Normalized Flux", fontsize=label_size_font)
-plt.title(f"{line_name[order]}. Blue Scaled {optimal_scale}. Order_{order}.", fontsize=20)
-plt.grid(True)
-plt.legend()
-plt.savefig(f"gaussian_order_{order}.jpg", dpi=500)
-plt.show()
-
-W_o= 2*best_vals[2]*np.log(2)
-
-W = W_o * (10 **(-10))
-perr = np.sqrt(np.diag(covar))
-
-
-line_x, line_y_sun = absorption_line(wavelength_object_sun, normalized_flux_o_sun, order)  
-line_x, line_y_sunspot = absorption_line(wavelength_object_sunspot, normalized_flux_sunspot * 1.45, order) #1.45
-
-
-# TESTING
-best_vals, covar = curve_fit(gaussian, wavelength, flux, p0=init_vals)
-best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=init_vals)
-#best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=[-0.5,6257.87,0.5,1])
-
-
-
-
-
-
-#print(best_vals)
-
-
-######################################################################################################################################################
 distance = 0
 counter = 0
 x_solutions = []
 solution_values = []
 y_value_list=[]
-for y_value in np.arange(0.35, 0.6, 0.01):
 
+for y_value in np.arange(loop_start, loop_end, 0.01):
+    
     amplitude = best_vals[0]
     centrum = best_vals[1]
     wide = best_vals[2]
     dy_value = best_vals[3]
+    
+    amplitude_s = best_vals_blue[0]
+    centrum_s = best_vals_blue[1]
+    wide_s = best_vals_blue[2]
+    dy_value_s = best_vals_blue[3]
+    
+    x_value_1_sun = centrum + np.sqrt(-wide * np.log((y_value - dy_value) / amplitude))
+    x_value_2_sun = centrum - np.sqrt(-wide * np.log((y_value - dy_value) / amplitude))
 
-    amplitude_s = best_vals_spot[0]
-    centrum_s = best_vals_spot[1]
-    wide_s = best_vals_spot[2]
-    dy_value_s = best_vals_spot[3]
-
-    x_value_1_sun = centrum + np.sqrt(-wide * np.log((y_value* max(flux) - dy_value) / amplitude))
-    x_value_2_sun = centrum - np.sqrt(-wide * np.log((y_value* max(flux) - dy_value) / amplitude))
-
-    x_value_1_sunspot = centrum_s + np.sqrt(-wide_s * np.log((y_value - dy_value_s) / amplitude_s))
-    x_value_2_sunspot = centrum_s - np.sqrt(-wide_s * np.log((y_value - dy_value_s) / amplitude_s))
-
+    x_value_1_sunspot = centrum_s + np.sqrt(-wide_s * np.log((y_value + up_or_down - dy_value_s) / amplitude_s))
+    x_value_2_sunspot = centrum_s - np.sqrt(-wide_s * np.log((y_value + up_or_down - dy_value_s) / amplitude_s))
+    
     dx_1 = abs(x_value_1_sun - x_value_1_sunspot)
     dx_2 = abs(x_value_2_sun - x_value_2_sunspot)
     
@@ -427,8 +430,64 @@ for y_value in np.arange(0.35, 0.6, 0.01):
     y_value_list.append(y_value)
     y_value_list.append(y_value)
     y_value_list.append(y_value)
- 
-   
+
+
+plt.figure(figsize=(10, 6))
+plt.plot(wavelength, red_flux, color="red", label="sun", linewidth=4)
+plt.plot(wavelength, scaled_blue_flux - up_or_down, color="blue", label="sunspot", linewidth=4)
+plt.plot(wavelength,gaussian(wavelength, best_vals[0],best_vals[1],best_vals[2], best_vals[3]), color="orange", label="fit sun")
+
+# Gaussian fits
+plt.plot(wavelength, red_fit, '--', label="Red Gaussian Fit", color="darkred")
+plt.plot(wavelength, blue_fit, '--', label="Blue Gaussian Fit", color="darkblue")
+#plt.plot(wavelength,gaussian(wavelength, best_vals_spot[0], best_vals_spot[1], best_vals_spot[2], best_vals_spot[3]), color="green", label="fit sunspot")
+plt.scatter(x_solutions, y_value_list, color="black", label="shift calc. points", s=12, zorder=3)
+
+label_size_font = 15
+plt.xlabel("Wavelength (Å)", fontsize=label_size_font)
+plt.ylabel("Normalized Flux", fontsize=label_size_font)
+plt.title(f"{line_name[order]}. Blue Scaled {optimal_scale}. Order_{order}.", fontsize=20)
+plt.grid(True)
+plt.legend()
+plt.savefig(f"gaussian_order_{order}.jpg", dpi=500)
+
+
+
+
+    
+
+
+
+
+
+
+W_o= 2*best_vals[2]*np.log(2)
+
+W = W_o * (10 **(-10))
+perr = np.sqrt(np.diag(covar))
+
+
+line_x, line_y_sun = absorption_line(wavelength_object_sun, normalized_flux_o_sun, order)  
+line_x, line_y_sunspot = absorption_line(wavelength_object_sunspot, normalized_flux_sunspot * 1.45, order) #1.45
+
+
+# TESTING
+#best_vals, covar = curve_fit(gaussian, wavelength, flux, p0=init_vals)
+best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=init_vals)
+#best_vals_spot, covar_spot = curve_fit(gaussian, wavelength, line_y_sunspot, p0=[-0.5,6257.87,0.5,1])
+
+
+
+
+
+
+#print(best_vals)
+
+
+######################################################################################################################################################
+
+
+       
 
 
 sun_hand = [4920.486, 4920.127, 4920.391, 4920.244]
@@ -439,7 +498,7 @@ for m in range(len(sun_hand)):
     longitude = longitude + abs(sun_hand[m] - sunspot_hand[m])
 avg_long = longitude / len(sunspot_hand)
     
-method = 2
+method = 1
     
 if method == 1:
     shift = distance / counter
@@ -470,16 +529,9 @@ error_result_dx = np.sqrt((derivative_1 * error_W)**2 + (derivative_2 * error_sh
 m_e = 9.10938 * (10**(-31))
 c = 299792458
 e = 1.60217663 * (10**(-19))
-lambda_rest = 4920.5028 #line_center[order]
 
-g_lande_1 = 1.5 #[1,1,1,1,1,3.3333,1,2,1,1,1,1.4,1,1,1,1.5,2.6667]
-g_lande_2 = 1.65 #[1,1,1,1,1,3.3333,1,1.333,1,1,1,1.5,1,1,1,1.65,2.6667]
-j_1 = 5 #[0,0,0,0,0,0,0,0.5,0,0,0,5,0,0,0,5]
-j_2 = 4 #[0,0,0,0,0,0,0,1.5,0,0,0,4,0,0,0,4]
 #big_g = ((g_lande_1[order] + g_lande_2[order])/2) + ((g_lande_1[order] - g_lande_2[order])/4)*(j_1[order]*(j_1[order] + 1) - j_2[order]*(j_2[order] + 1))
-big_g = ((g_lande_1 + g_lande_2)/2) + ((g_lande_1 - g_lande_2)/4)*(j_1*(j_1 + 1) - j_2*(j_2 + 1))
 
-g = big_g
 
 #1.425 for 5328.051
 
@@ -490,8 +542,10 @@ print(f"Lambda rest: {lambda_rest}")
 print(f"B = {round(magnetic_field,1)} +/- {round(magnetic_field_error,1)} G")
 print(f"G: {g}")
 
-print(f"Shift avg: {shift} +/- {error_shift} A")
-print(f"Delta lambda: {result_dx} +/- {error_result_dx} A")
+
+
+#print(f"Shift avg: {shift} +/- {error_shift} A")
+print(f"Delta lambda: {round(result_dx,3)} +/- {round(error_result_dx,3)} A")
 #print(avg_long)
 #print(perr)
 #print(W_o)
@@ -512,4 +566,4 @@ plt.title(f"{line_name[order]}. Scaled. Order_{order}", fontsize=20)
 plt.grid(True)
 plt.legend()
 plt.savefig(f"Final_plot_order_{order}", dpi=500)
-plt.close()
+plt.show()
